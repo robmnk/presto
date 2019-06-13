@@ -111,7 +111,7 @@ public final class TypeUtils
             if (((VarcharType) type).isUnbounded()) {
                 return "VARCHAR";
             }
-            return "VARCHAR(" + ((VarcharType) type).getLengthSafe() + ")";
+            return "VARCHAR(" + ((VarcharType) type).getLength() + ")";
         }
         if (type instanceof CharType) {
             if (((CharType) type).getLength() == CharType.MAX_LENGTH) {

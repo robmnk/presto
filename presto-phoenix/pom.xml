@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.prestosql</groupId>
         <artifactId>presto-root</artifactId>
-        <version>301-SNAPSHOT</version>
+        <version>302-SNAPSHOT</version>
     </parent>
 
     <artifactId>presto-phoenix</artifactId>
@@ -14,6 +14,7 @@
 
     <properties>
         <air.main.basedir>${project.parent.basedir}</air.main.basedir>
+        <air.check.skip-checkstyle>true</air.check.skip-checkstyle>
     </properties>
 
     <dependencies>
@@ -170,5 +171,33 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <!--<build>-->
+        <!--<plugins>-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-shade-plugin</artifactId>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>package</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>shade</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<createSourcesJar>true</createSourcesJar>-->
+                            <!--<shadeSourcesContent>true</shadeSourcesContent>-->
+                            <!--<dependencyReducedPomLocation>${project.build.directory}/pom.xml</dependencyReducedPomLocation>-->
+                            <!--<relocations>-->
+                                <!--<relocation>-->
+                                    <!--<pattern>javax.validation</pattern>-->
+                                    <!--<shadedPattern>javax.shaded.validation</shadedPattern>-->
+                                <!--</relocation>-->
+                            <!--</relocations>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
+        <!--</plugins>-->
+    <!--</build>-->
 
 </project>

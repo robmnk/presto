@@ -41,55 +41,41 @@ public final class TestingPhoenixServer
 
     public TestingPhoenixServer()
     {
-        java.util.logging.Logger.getLogger("org.apache").setLevel(Level.SEVERE);
-
-        this.conf.setInt(HConstants.MASTER_INFO_PORT, -1);
-        this.conf.setInt(HConstants.REGIONSERVER_INFO_PORT, -1);
-        this.conf.setInt(HConstants.HBASE_CLIENT_RETRIES_NUMBER, 1);
-        this.conf.set("hbase.regionserver.wal.codec", "org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec");
-        this.conf.setBoolean("phoenix.schema.isNamespaceMappingEnabled", true);
-        this.hbaseTestingUtility = new HBaseTestingUtility(conf);
-
-        try {
-            this.port = randomPort();
-            this.hbaseTestingUtility.startMiniZKCluster(1, port);
-
-            MiniHBaseCluster hbm = hbaseTestingUtility.startMiniHBaseCluster(1, 4);
-            hbm.waitForActiveAndReadyMaster();
-            LOG.info("Phoenix server ready: %s", getJdbcUrl());
-        }
-        catch (Exception e) {
-            throw new IllegalStateException("Can't start phoenix server.", e);
-        }
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            close();
-        }));
+//        java.util.logging.Logger.getLogger("org.apache").setLevel(Level.SEVERE);
+//
+//        this.conf.setInt(HConstants.MASTER_INFO_PORT, -1);
+//        this.conf.setInt(HConstants.REGIONSERVER_INFO_PORT, -1);
+//        this.conf.setInt(HConstants.HBASE_CLIENT_RETRIES_NUMBER, 1);
+//        this.conf.set("hbase.regionserver.wal.codec", "org.apache.hadoop.hbase.regionserver.wal.IndexedWALEditCodec");
+//        this.conf.setBoolean("phoenix.schema.isNamespaceMappingEnabled", true);
+//        this.hbaseTestingUtility = new HBaseTestingUtility(conf);
+//
+//        try {
+//            MiniHBaseCluster mc = this.hbaseTestingUtility.startMiniCluster(1, 4);
+//            mc.waitForActiveAndReadyMaster();
+//            LOG.info("Phoenix server ready: %s", getJdbcUrl());
+//        }
+//        catch (Exception e) {
+//            throw new IllegalStateException("Can't start phoenix server.", e);
+//        }
+//
+//        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+//            close();
+//        }));
     }
 
     public void close()
     {
-        if (hbaseTestingUtility != null) {
-            try {
-                LOG.info("Shutting down HBase cluster.");
-                hbaseTestingUtility.shutdownMiniHBaseCluster();
-                hbaseTestingUtility.shutdownMiniZKCluster();
-            }
-            catch (IOException e) {
-                Thread.currentThread().interrupt();
-                throw new PrestoException(SERVER_SHUTTING_DOWN, "Failed to shutdown HTU instance", e);
-            }
-            hbaseTestingUtility = null;
-        }
-    }
-
-    private static int randomPort()
-            throws IOException
-    {
-        try (ServerSocket socket = new ServerSocket()) {
-            socket.bind(new InetSocketAddress(0));
-            return socket.getLocalPort();
-        }
+//        if (hbaseTestingUtility != null) {
+//            try {
+//                LOG.info("Shutting down HBase cluster.");
+//                hbaseTestingUtility.shutdownMiniCluster();
+//            } catch (Exception e) {
+//                Thread.currentThread().interrupt();
+//                throw new PrestoException(SERVER_SHUTTING_DOWN, "Failed to shutdown HTU instance", e);
+//            }
+//            hbaseTestingUtility = null;
+//        }
     }
 
     public String getJdbcUrl()

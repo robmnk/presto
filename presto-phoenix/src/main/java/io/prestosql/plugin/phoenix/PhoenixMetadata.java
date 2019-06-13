@@ -43,8 +43,10 @@ import io.prestosql.spi.type.RowType.Field;
 import io.prestosql.spi.type.Type;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.client.Admin;
+import org.apache.hadoop.hbase.client.ColumnFamilyDescriptor;
+import org.apache.hadoop.hbase.client.TableDescriptor;
+import org.apache.hadoop.hbase.io.compress.Compression;
 import org.apache.phoenix.jdbc.PhoenixConnection;
 import org.apache.phoenix.query.QueryConstants;
 import org.apache.phoenix.schema.PTable;
@@ -247,7 +249,7 @@ public class PhoenixMetadata
     {
         ImmutableMap.Builder<String, Object> properties = ImmutableMap.builder();
 
-        try (PhoenixConnection pconn = phoenixClient.getConnection(); HBaseAdmin admin = pconn.getQueryServices().getAdmin()) {
+        try (PhoenixConnection pconn = phoenixClient.getConnection(); Admin admin = pconn.getQueryServices().getAdmin()) {
             PTable table = getTable(pconn, getFullTableName(handle.getCatalogName(), handle.getSchemaName(), handle.getTableName()));
 
             if (table.getBucketNum() != null) {
@@ -265,10 +267,10 @@ public class PhoenixMetadata
                 properties.put(PhoenixTableProperties.DEFAULT_COLUMN_FAMILY, defaultFamilyName);
             }
 
-            HTableDescriptor tableDesc = admin.getTableDescriptor(table.getPhysicalName().getBytes());
+            TableDescriptor tableDesc = pconn.getQueryServices().getTableDescriptor(table.getPhysicalName().getBytes());
+            ColumnFamilyDescriptor[] columnFamilies = tableDesc.getColumnFamilies();
 
-            HColumnDescriptor[] columnFamilies = tableDesc.getColumnFamilies();
-            for (HColumnDescriptor columnFamily : columnFamilies) {
+            for (ColumnFamilyDescriptor columnFamily : columnFamilies) {
                 if (columnFamily.getNameAsString().equals(defaultFamilyName)) {
                     if (!columnFamily.getBloomFilterType().toString().equals("NONE")) {
                         properties.put(PhoenixTableProperties.BLOOMFILTER, columnFamily.getBloomFilterType().toString());
@@ -279,8 +281,9 @@ public class PhoenixMetadata
                     if (columnFamily.getMinVersions() > 0) {
                         properties.put(PhoenixTableProperties.MIN_VERSIONS, columnFamily.getMinVersions());
                     }
-                    if (!columnFamily.getCompression().toString().equals("NONE")) {
-                        properties.put(PhoenixTableProperties.COMPRESSION, columnFamily.getCompression().toString());
+
+                    if (columnFamily.getCompressionType() != Compression.Algorithm.NONE) {
+                        properties.put(PhoenixTableProperties.COMPRESSION, columnFamily.getCompressionType().toString());
                     }
                     if (columnFamily.getTimeToLive() < FOREVER) {
                         properties.put(PhoenixTableProperties.TTL, columnFamily.getTimeToLive());
@@ -673,8 +676,11 @@ public class PhoenixMetadata
     protected SchemaTableName getSchemaTableName(ResultSet resultSet)
             throws SQLException
     {
+        String schema = resultSet.getString(TABLE_SCHEM);
+        schema = schema == null ? "default" : schema;
+
         return new SchemaTableName(
-                resultSet.getString(TABLE_SCHEM).toLowerCase(ENGLISH),
+                schema.toLowerCase(ENGLISH),
                 resultSet.getString(TABLE_NAME).toLowerCase(ENGLISH));
     }
 
