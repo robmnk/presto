@@ -164,5 +164,9 @@
             <directory>${project.build.directory}/dependency/presto-elasticsearch-${project.version}</directory>
             <outputDirectory>plugin/presto-elasticsearch</outputDirectory>
         </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/presto-phoenix-${project.version}</directory>
+            <outputDirectory>plugin/presto-phoenix</outputDirectory>
+        </fileSet>
     </fileSets>
 </assembly>
