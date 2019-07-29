@@ -13,6 +13,7 @@
  */
 package com.facebook.presto.phoenix;
 
+import com.facebook.presto.plugin.jdbc.JdbcSplit;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,20 +29,17 @@ import javax.annotation.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
 import static java.util.Objects.requireNonNull;
 
 public class PhoenixSplit
-        implements ConnectorSplit
+        extends JdbcSplit
 {
-    private final String connectorId;
-    private final String catalogName;
-    private final String schemaName;
-    private final String tableName;
-    private final TupleDomain<ColumnHandle> tupleDomain;
     private final List<HostAddress> addresses;
     private final WrappedPhoenixInputSplit phoenixInputSplit;
+    private final TupleDomain<ColumnHandle> constraint;
 
     @JsonCreator
     public PhoenixSplit(
@@ -50,36 +48,22 @@ public class PhoenixSplit
             @JsonProperty("schemaName") @Nullable String schemaName,
             @JsonProperty("tableName") String tableName,
             @JsonProperty("tupleDomain") TupleDomain<ColumnHandle> tupleDomain,
+            @JsonProperty("additionalProperty") Optional<String> additionalPredicate,
             @JsonProperty("addresses") List<HostAddress> addresses,
-            @JsonProperty("phoenixInputSplit") WrappedPhoenixInputSplit wrappedPhoenixInputSplit)
+            @JsonProperty("phoenixInputSplit") WrappedPhoenixInputSplit wrappedPhoenixInputSplit,
+            @JsonProperty("constraint") TupleDomain<ColumnHandle> constraint)
     {
-        this.connectorId = requireNonNull(connectorId, "connector id is null");
-        this.catalogName = catalogName;
-        this.schemaName = schemaName;
-        this.tableName = requireNonNull(tableName, "table name is null");
-        this.tupleDomain = requireNonNull(tupleDomain, "tupleDomain is null");
-        this.addresses = addresses;
-        this.phoenixInputSplit = wrappedPhoenixInputSplit;
+        super(connectorId, catalogName, schemaName, tableName, tupleDomain, additionalPredicate);
+        this.addresses = requireNonNull(addresses, "addresses is null");
+        this.phoenixInputSplit = requireNonNull(wrappedPhoenixInputSplit, "wrappedPhoenixInputSplit is null");
+        this.constraint = requireNonNull(constraint, "constraint is null");
     }
 
     @JsonProperty
-    public String getConnectorId()
+    @Override
+    public List<HostAddress> getAddresses()
     {
-        return connectorId;
-    }
-
-    @JsonProperty
-    @Nullable
-    public String getCatalogName()
-    {
-        return catalogName;
-    }
-
-    @JsonProperty
-    @Nullable
-    public String getSchemaName()
-    {
-        return schemaName;
+        return addresses;
     }
 
     @JsonProperty("phoenixInputSplit")
@@ -95,90 +79,8 @@ public class PhoenixSplit
     }
 
     @JsonProperty
-    public String getTableName()
+    public TupleDomain<ColumnHandle> getConstraint()
     {
-        return tableName;
-    }
-
-    @JsonProperty
-    public TupleDomain<ColumnHandle> getTupleDomain()
-    {
-        return tupleDomain;
-    }
-
-    @JsonProperty
-    @Override
-    public List<HostAddress> getAddresses()
-    {
-        return addresses;
-    }
-
-    @Override
-    public boolean isRemotelyAccessible()
-    {
-        return true;
-    }
-
-    @Override
-    public Object getInfo()
-    {
-        return ImmutableMap.builder()
-                .put("hosts", addresses)
-                .put("schema", schemaName)
-                .put("table", tableName)
-                .put("keyRange", getPhoenixInputSplit().getKeyRange())
-                .build();
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(
-                connectorId,
-                catalogName,
-                schemaName,
-                tableName,
-                tupleDomain,
-                addresses,
-                phoenixInputSplit);
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        PhoenixSplit other = (PhoenixSplit) obj;
-        return Objects.equals(this.connectorId, other.connectorId) &&
-                Objects.equals(this.catalogName, other.catalogName) &&
-                Objects.equals(this.schemaName, other.schemaName) &&
-                Objects.equals(this.tableName, other.tableName) &&
-                Objects.equals(this.tupleDomain, other.tupleDomain) &&
-                Objects.equals(this.addresses, other.addresses) &&
-                Objects.equals(this.phoenixInputSplit, other.phoenixInputSplit);
-    }
-
-    @Override
-    public String toString()
-    {
-        ToStringHelper helper = toStringHelper(this)
-                .add("connectorId", connectorId);
-        if (catalogName != null) {
-            helper.add("catalogName", catalogName);
-        }
-        if (schemaName != null) {
-            helper.add("schemaName", schemaName);
-        }
-
-        helper.add("tableName", tableName)
-                .add("tupleDomain", tupleDomain)
-                .add("addresses", addresses)
-                .add("phoenixInputSplit", getPhoenixInputSplit().getKeyRange());
-
-        return helper.toString();
+        return constraint;
     }
 }

@@ -68,9 +68,9 @@ import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.stream.Collectors.joining;
 import static org.joda.time.DateTimeZone.UTC;
 
-public class QueryBuilder
+public class QueryBuilderOld
 {
-    private QueryBuilder()
+    private QueryBuilderOld()
     {
     }
 

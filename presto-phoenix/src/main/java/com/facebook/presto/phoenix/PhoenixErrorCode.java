@@ -18,17 +18,22 @@ import com.facebook.presto.spi.ErrorCodeSupplier;
 import com.facebook.presto.spi.ErrorType;
 
 import static com.facebook.presto.spi.ErrorType.EXTERNAL;
+import static com.facebook.presto.spi.ErrorType.INTERNAL_ERROR;
 
 public enum PhoenixErrorCode
         implements ErrorCodeSupplier
 {
-    PHOENIX_ERROR(0, EXTERNAL), PHOENIX_NON_TRANSIENT_ERROR(1, EXTERNAL);
+    PHOENIX_INTERNAL_ERROR(0, INTERNAL_ERROR),
+    PHOENIX_QUERY_ERROR(1, EXTERNAL),
+    PHOENIX_CONFIG_ERROR(2, INTERNAL_ERROR),
+    PHOENIX_METADATA_ERROR(3, EXTERNAL),
+    PHOENIX_SPLIT_ERROR(4, EXTERNAL);
 
     private final ErrorCode errorCode;
 
     PhoenixErrorCode(int code, ErrorType type)
     {
-        errorCode = new ErrorCode(code + 0x0105_0000, name(), type);
+        errorCode = new ErrorCode(code + 0x0106_0000, name(), type);
     }
 
     @Override
